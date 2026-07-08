@@ -1,5 +1,5 @@
 const App = () => {
-  return <>Card Finder Testing!</>
+  return <>Deploy test</>
 };
 
 export default App;
