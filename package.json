@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && aws s3 sync dist/ s3://cardfinder-bucket --delete && aws cloudfront create-invalidation --distribution-id E2M3ZBXIVCW0LI --paths \"/*\""
   },
   "dependencies": {
     "react": "^19.2.7",
