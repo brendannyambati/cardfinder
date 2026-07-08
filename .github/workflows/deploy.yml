@@ -1,0 +1,47 @@
+name: Deploy React App to AWS S3/CloudFront
+
+on:
+  push:
+    branches:
+      - main  # Triggers the workflow only on pushes to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Set up Node.js environment
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    # 3. Install dependencies and build the app
+    - name: Install dependencies & Build
+      run: |
+        npm ci
+        npm run build
+
+    # 4. Configure AWS Credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets::AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets::AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # Change this if your bucket is in a different region
+
+    # 5. Deploy files to S3 bucket
+    - name: Deploy to S3
+      run: |
+        aws s3 sync dist/ s3://cardfinder-bucket --delete
+      # Note: Change 'dist/' to 'build/' if you are using Create React App instead of Vite
+
+    # 6. Invalidate CloudFront Cache
+    - name: Invalidate CloudFront cache
+      run: |
+        aws cloudfront create-invalidation --distribution-id ${{ secrets::CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
